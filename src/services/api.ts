@@ -1,26 +1,7 @@
+import { Recipe } from '@/models/recipe';
 import axios from 'axios';
 const API_BASE_URL = process.env.API_BASE_URL;
 
-interface recipe {
-  title: string;
-  ingredients: string[];
-  instructions: string[];
-  description?: string;
-  total_time?: string;
-  prep_time?: string;
-  difficulty?: string;
-  url?: string;
-  saturated_fat?: string;
-  fat?: string;
-  calories?: string;
-  carbohydrate?: string;
-  sugar?: string;
-  fiber?: string;
-  protein?: string;
-  cholesterol?: string;
-  sodium?: string;
-  utensils?: string;
-}
 
 export const getRecipes = async (
   newPage: number,
@@ -46,7 +27,7 @@ export const getRecipes = async (
   }
 };
 
-export const createRecipe = async (recipe: recipe) => {
+export const createRecipe = async (recipe: Recipe) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/recipes`, recipe);
     return response.data;
@@ -55,7 +36,7 @@ export const createRecipe = async (recipe: recipe) => {
   }
 };
 
-export const updateRecipe = async (id: string, recipe: recipe) => {
+export const updateRecipe = async (id: string, recipe: Recipe) => {
   try {
     const response = await axios.put(`${API_BASE_URL}/recipes/${id}`, recipe);
     return response.data;

@@ -7,6 +7,7 @@ import { RootState } from '@/redux/store';
 import { Recipe } from '@/models/recipe';
 import Spinner from '@/components/spinner';
 import Filters from '@/components/Filters';
+import { ErrorMessage } from '@/components/customError';
 
 interface RecipeListPageProps {
 	selectedRecipes: Set<string>;
@@ -42,7 +43,7 @@ const RecipeListPage: React.FC<RecipeListPageProps> = ({ selectedRecipes, setSel
 			const { recipes: fetchedRecipes } = await getRecipes(page, 10, search, difficulty, '');
 			dispatch(setRecipes(fetchedRecipes));
 		} catch (error) {
-			console.error('Error fetching recipes:', error);
+			error && <ErrorMessage message={error + ''} />;
 			setError('Failed to Fetch Recipes');
 		} finally {
 			setLoading(false);
@@ -56,7 +57,7 @@ const RecipeListPage: React.FC<RecipeListPageProps> = ({ selectedRecipes, setSel
 			dispatch(setRecipes([...recipes, ...moreRecipes]));
 			setPage(page + 1);
 		} catch (error) {
-			console.error('Error loading more recipes:', error);
+			error && <ErrorMessage message={error + ''} />;
 			setError('Error Loading Recipes');
 		} finally {
 			setLoading(false);

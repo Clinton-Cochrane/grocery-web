@@ -1,3 +1,4 @@
+import { ErrorMessage } from '@/components/customError';
 import RecipeForm from '@/components/recipeForm';
 import Spinner from '@/components/spinner';
 import { Recipe } from '@/models/recipe';
@@ -43,7 +44,7 @@ const RecipePage = () => {
 			setRecipe(fetchedRecipe);
 			setPageMode(pageModeType.EDIT);
 		} catch (error) {
-			console.error('Error fetching recipe on RecipePage:', error);
+			error && <ErrorMessage message={error + ''} />;
 		} finally {
 			setLoading(false);
 		}
@@ -53,13 +54,13 @@ const RecipePage = () => {
 		setLoading(true);
 		try {
 			if (pageMode === pageModeType.ADD) {
-				createRecipe(updatedRecipe);
+				await createRecipe(updatedRecipe);
 			} else {
 				await updateRecipe(updatedRecipe._id, updatedRecipe);
 			}
-			router.push('/recipe');
+			router.push('/recipes');
 		} catch (error) {
-			console.error('Error Saving Recipe from RecipePage: ', error);
+			error && <ErrorMessage message={error + ''} />;
 		} finally {
 			setLoading(false);
 		}
@@ -72,19 +73,53 @@ const RecipePage = () => {
 			{pageMode === pageModeType.VIEW && recipe && (
 				<div>
 					<h1>{recipe.title}</h1>
-					<p>Total Time {recipe['total time'] || 'N/A'} </p>
+					<p>Description: {recipe.description || 'N/A'}</p>
+					<p>Total Time: {recipe['total time'] || 'N/A'}</p>
 					<p>Difficulty: {recipe.difficulty || 'Unknown'}</p>
-                    {/*gotta add the other fields here*/}
-                    <button onClick={() => setPageMode(pageModeType.EDIT)}>Edit</button>
+					<p>Utensils: {recipe.utensils || 'None'}</p>
+					<h2>Ingredients:</h2>
+					{recipe.ingredients.length === 0 ? (
+						<p>No ingredients available.</p>
+					) : (
+						<ul>
+							{recipe.ingredients.map((ingredient, index) => (
+								<li key={index}>{ingredient}</li>
+							))}
+						</ul>
+					)}
+					{recipe.ingredients.length === 0 ? (
+						<p> No Instructions on this one</p>
+					) : (
+						<ol>
+							{recipe.instructions.map((instruction, index) => (
+								<li key={instruction.key || index}>{instruction.value}</li>
+							))}
+						</ol>
+					)}
+					<h2>Instructions:</h2>
+
+					<h2>Nutritional Information:</h2>
+					<ul>
+						<li>Saturated Fat: {recipe.saturated_fat || 'N/A'}</li>
+						<li>Fat: {recipe.fat || 'N/A'}</li>
+						<li>Calories: {recipe.calories || 'N/A'}</li>
+						<li>Carbohydrate: {recipe.carbohydrate || 'N/A'}</li>
+						<li>Sugar: {recipe.sugar || 'N/A'}</li>
+						<li>Fiber: {recipe.fiber || 'N/A'}</li>
+						<li>Protein: {recipe.protein || 'N/A'}</li>
+						<li>Cholesterol: {recipe.cholesterol || 'N/A'}</li>
+						<li>Sodium: {recipe.sodium || 'N/A'}</li>
+					</ul>
+					<button onClick={() => setPageMode(pageModeType.EDIT)}>Edit</button>
 				</div>
 			)}
-            {(pageMode === pageModeType.EDIT || pageMode === pageModeType.ADD) && (
-                <RecipeForm
-                    recipe= {pageMode === pageModeType.EDIT ? recipe : undefined}
-                    onSave= {handleSave}
-                    onCancel = {() => router.push(`/recipe/${id}`)}
-                />
-            )}
+			{(pageMode === pageModeType.EDIT || pageMode === pageModeType.ADD) && (
+				<RecipeForm
+					recipe={pageMode === pageModeType.EDIT ? recipe : undefined}
+					onSave={handleSave}
+					onCancel={() => router.push(`/recipe/${id}`)}
+				/>
+			)}
 		</div>
 	);
 };

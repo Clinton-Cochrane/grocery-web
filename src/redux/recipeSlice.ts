@@ -4,38 +4,50 @@ interface Recipe {
   _id: string;
   title: string;
   ingredients: string[];
-  instructions: {key:string; value: string}[];
+  instructions: { key: string; value: string }[];
   total_time?: string;
-  utensils?: string;  
+  utensils?: string;
   difficulty?: string;
 }
 
-type RecipesState = Recipe[];
+export interface RecipesState {
+  recipes: Recipe[];
+}
 
-const initialState: RecipesState = [];
+// Initial state matches `RecipesState` structure
+const initialState: RecipesState = {
+  recipes: [],
+};
 
 const recipeSlice = createSlice({
   name: "recipes",
   initialState,
   reducers: {
-    setRecipes: (state, action: PayloadAction<RecipesState>) => {
-      return action.payload;
+    // Set all recipes (replaces the current list)
+    setRecipes: (state, action: PayloadAction<Recipe[]>) => {
+      state.recipes = action.payload;
     },
 
+    // Add a new recipe
     addRecipe: (state, action: PayloadAction<Recipe>) => {
-      state.push(action.payload);
+      state.recipes.push(action.payload);
     },
 
+    // Update an existing recipe
     updateRecipe: (state, action: PayloadAction<Recipe>) => {
-      const index = state.findIndex(
+      const index = state.recipes.findIndex(
         (recipe) => recipe._id === action.payload._id
       );
       if (index !== -1) {
-        state[index] = action.payload;
+        state.recipes[index] = action.payload;
       }
     },
+
+    // Delete a recipe by ID
     deleteRecipe: (state, action: PayloadAction<string>) => {
-      return state.filter((recipe) => recipe._id !== action.payload);
+      state.recipes = state.recipes.filter(
+        (recipe) => recipe._id !== action.payload
+      );
     },
   },
 });

@@ -1,5 +1,6 @@
 import { Recipe } from '@/models/recipe';
 import React, { useState } from 'react';
+import { validateRecipe } from '@/utilities/validation';
 
 interface RecipeFormProps {
 	recipe?: Recipe | null;
@@ -8,96 +9,97 @@ interface RecipeFormProps {
 }
 
 const RecipeForm: React.FC<RecipeFormProps> = ({ recipe, onSave, onCancel }) => {
-	const [title, setTitle] = useState(recipe?.title || '');
-	const [difficulty, setDifficulty] = useState(recipe?.difficulty || '');
-	const [totalTime, setTotalTime] = useState(recipe?.['total time'] || '');
-	const [utensils, setUtensils] = useState(recipe?.utensils || '');
-	const [saturatedFat, setSaturatedFat] = useState(recipe?.saturated_fat || '');
-	const [calories, setCalories] = useState(recipe?.calories || '');
-	const [carbohydrate, setCarbohydrate] = useState(recipe?.carbohydrate || '');
-	const [sugar, setSugar] = useState(recipe?.sugar || '');
-	const [fiber, setFiber] = useState(recipe?.fiber || '');
-	const [protein, setProtein] = useState(recipe?.protein || '');
-	const [cholesterol, setCholesterol] = useState(recipe?.cholesterol || '');
-	const [sodium, setSodium] = useState(recipe?.sodium || '');
-    const [fat, setFat] = useState(recipe?.fat || '');
+	// Initialize state with all form fields
+	const [formData, setFormData] = useState({
+		title: recipe?.title || '',
+		difficulty: recipe?.difficulty || '',
+		totalTime: recipe?.['total time'] || '',
+		utensils: recipe?.utensils || '',
+		saturatedFat: recipe?.saturated_fat || '',
+		calories: recipe?.calories || '',
+		carbohydrate: recipe?.carbohydrate || '',
+		sugar: recipe?.sugar || '',
+		fiber: recipe?.fiber || '',
+		protein: recipe?.protein || '',
+		cholesterol: recipe?.cholesterol || '',
+		sodium: recipe?.sodium || '',
+		fat: recipe?.fat || '',
+	});
 
+	const [errors, setErrors] = useState<Record<string, string>>({});
+
+	// Form field configuration
+	const formFields = [
+		{ name: 'title', label: 'Title', type: 'text', required: true },
+		{ name: 'totalTime', label: 'Total Time', type: 'text', required: true },
+		{ name: 'utensils', label: 'Utensils', type: 'text' },
+		{ name: 'difficulty', label: 'Difficulty', type: 'select', required: true, options: ['Easy', 'Medium', 'Hard'] },
+		{ name: 'calories', label: 'Calories', type: 'number' },
+		{ name: 'fat', label: 'Fat', type: 'number' },
+		{ name: 'saturatedFat', label: 'Saturated Fat', type: 'number' },
+		{ name: 'carbohydrate', label: 'Carbohydrate', type: 'number' },
+		{ name: 'sugar', label: 'Sugar', type: 'number' },
+		{ name: 'fiber', label: 'Fiber', type: 'number' },
+		{ name: 'protein', label: 'Protein', type: 'number' },
+		{ name: 'cholesterol', label: 'Cholesterol', type: 'number' },
+		{ name: 'sodium', label: 'Sodium', type: 'number' },
+	];
+
+	// Handle input changes
+	const handleChange = (field: string, value: string) => {
+		setFormData((prev) => ({ ...prev, [field]: value }));
+	};
+
+	// Handle form submission
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
+		const { isValid, errors: validationErrors } = validateRecipe(formData);
+
+		if (!isValid) {
+			setErrors(validationErrors);
+			return;
+		}
+
 		onSave({
 			_id: recipe?._id || '',
-			title,
-			difficulty,
-			'total time': totalTime,
+			...formData,
+			'total time': formData.totalTime,
 			ingredients: recipe?.ingredients || [],
 			instructions: recipe?.instructions || [],
-			utensils,
-            fat,
-			saturated_fat: saturatedFat,
-			calories,
-			carbohydrate,
-			sugar,
-			fiber,
-			protein,
-			cholesterol,
-			sodium,
+			saturated_fat: formData.saturatedFat,
 		});
 	};
+
 	return (
 		<form onSubmit={handleSubmit}>
 			<div>
-				<label htmlFor="title">Title</label>
-				<input id="title" value={title} onChange={(e) => setTitle(e.target.value)} />
-
-				<label>Total Time</label>
-				<input value={totalTime} onChange={(e) => setTotalTime(e.target.value)} />
-
-				<label>Utensils</label>
-				<input value={utensils} onChange={(e) => setUtensils(e.target.value)} />
-
-				<label>Saturated Fat</label>
-				<input value={saturatedFat} onChange={(e) => setSaturatedFat(e.target.value)} />
-
-				<label>Calories</label>
-				<input value={calories} onChange={(e) => setCalories(e.target.value)} />
-
-				<label htmlFor="totalTime">Total Time</label>
-				<input id="totalTime" value={totalTime} onChange={(e) => setTotalTime(e.target.value)} />
-
-				<label htmlFor="difficulty">Difficulty</label>
-				<select id="difficulty" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
-					<option value="">Select</option>
-					<option value="Easy">Easy</option>
-					<option value="Medium">Medium</option>
-					<option value="Hard">Hard</option>
-				</select>
-
-				<label>Saturated Fat</label>
-				<input value={saturatedFat} onChange={(e) => setSaturatedFat(e.target.value)} />
-
-				<label>Fat</label>
-				<input value={fat} onChange={(e) => setFat(e.target.value)} />
-
-				<label>Calories</label>
-				<input value={calories} onChange={(e) => setCalories(e.target.value)} />
-
-				<label>Carbohydrate</label>
-				<input value={carbohydrate} onChange={(e) => setCarbohydrate(e.target.value)} />
-
-				<label>Sugar</label>
-				<input value={sugar} onChange={(e) => setSugar(e.target.value)} />
-
-				<label>Fiber</label>
-				<input value={fiber} onChange={(e) => setFiber(e.target.value)} />
-
-				<label>Protein</label>
-				<input value={protein} onChange={(e) => setProtein(e.target.value)} />
-
-				<label>Cholesterol</label>
-				<input value={cholesterol} onChange={(e) => setCholesterol(e.target.value)} />
-
-				<label>Sodium</label>
-				<input value={sodium} onChange={(e) => setSodium(e.target.value)} />
+				{formFields.map((field) => (
+					<div key={field.name} style={{ marginBottom: '1rem' }}>
+						<label htmlFor={field.name}>{field.label}</label>
+						{field.type === 'select' ? (
+							<select
+								id={field.name}
+								value={formData[field.name as keyof typeof formData]}
+								onChange={(e) => handleChange(field.name, e.target.value)}
+							>
+								<option value="">Select</option>
+								{field.options?.map((option) => (
+									<option key={option} value={option}>
+										{option}
+									</option>
+								))}
+							</select>
+						) : (
+							<input
+								id={field.name}
+								type={field.type}
+								value={formData[field.name as keyof typeof formData]}
+								onChange={(e) => handleChange(field.name, e.target.value)}
+							/>
+						)}
+						{errors[field.name] && <p style={{ color: 'red' }}>{errors[field.name]}</p>}
+					</div>
+				))}
 			</div>
 			<button type="submit">{recipe ? 'Save Changes' : 'Add Recipe'}</button>
 			<button type="button" onClick={onCancel}>

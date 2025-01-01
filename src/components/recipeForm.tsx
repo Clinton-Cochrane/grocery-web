@@ -99,7 +99,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipe, onSave, onCancel }) => 
 				<label>Sodium</label>
 				<input value={sodium} onChange={(e) => setSodium(e.target.value)} />
 			</div>
-			<button type="submit">{recipe ? 'Save Changes' : 'Add Recipe'};</button>
+			<button type="submit">{recipe ? 'Save Changes' : 'Add Recipe'}</button>
 			<button type="button" onClick={onCancel}>
 				Cancel
 			</button>

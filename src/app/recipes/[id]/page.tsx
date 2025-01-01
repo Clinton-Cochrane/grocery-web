@@ -1,12 +1,14 @@
+'use client';
+
 import { createRecipe, getRecipeById, updateRecipe } from '@/services/api';
 import { ErrorMessage } from '@/components/customError';
-import { useDispatch, useSelector } from 'react-redux';
 import RecipeForm from '@/components/recipeForm';
 import { useEffect, useState } from 'react';
 import Spinner from '@/components/spinner';
+import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { Recipe } from '@/models/recipe';
-import { useRouter } from 'next/router';
+import { useRouter, useParams } from 'next/navigation';
 
 enum pageModeType {
 	ADD = 'ADD',
@@ -16,8 +18,7 @@ enum pageModeType {
 
 const RecipePage = () => {
 	const router = useRouter();
-	const { id } = router.query;
-	const dispatch = useDispatch();
+	const { id } = useParams();
 	const [loading, setLoading] = useState(false);
 	const [recipe, setRecipe] = useState<Recipe | null>(null);
 	const recipes = useSelector((state: RootState) => state.recipes.recipes);
@@ -25,9 +26,8 @@ const RecipePage = () => {
 
 	useEffect(() => {
 		if (!id) return;
-		if (typeof id === 'string' && id === pageModeType.ADD) {
-			setPageMode(pageModeType.ADD);
-		} else {
+		if (id === pageModeType.ADD) setPageMode(pageModeType.ADD);
+		else {
 			const existingRecipe = recipes.find((r) => r._id === id);
 			if (existingRecipe) {
 				setRecipe(existingRecipe);
@@ -44,7 +44,7 @@ const RecipePage = () => {
 				: await updateRecipe(updatedRecipe._id, updatedRecipe);
 			router.push('/recipes');
 		} catch (error) {
-			error && <ErrorMessage message={error + ''} />;
+			<ErrorMessage message={error + ''} />;
 		} finally {
 			setLoading(false);
 		}
@@ -55,11 +55,7 @@ const RecipePage = () => {
 	return (
 		<div>
 			{(pageMode === pageModeType.EDIT || pageMode === pageModeType.ADD) && (
-				<RecipeForm
-					recipe={pageMode === pageModeType.EDIT ? recipe : undefined}
-					onSave={handleSave}
-					onCancel={() => router.push(`/recipe/${id}`)}
-				/>
+				<RecipeForm recipe={recipe} onSave={handleSave} onCancel={() => router.back()} />
 			)}
 			{pageMode === pageModeType.VIEW && recipe && (
 				<div>
@@ -75,7 +71,9 @@ const RecipePage = () => {
 					) : (
 						<ul>
 							{recipe.ingredients.map((ingredient, index) => (
-								<li key={index}>{ingredient}</li>
+								<li key={index}>
+									{ingredient.amount} {ingredient.measurement} {ingredient.name}
+								</li>
 							))}
 						</ul>
 					)}

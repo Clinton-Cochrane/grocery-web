@@ -8,7 +8,7 @@ export const getRecipes = async (
   pageSize: number,
   searchTerm: string,
   difficulty: string,
-  ingredient: string,
+  ingredient: string = "",
 ) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/recipes`, {

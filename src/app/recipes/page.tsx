@@ -1,3 +1,5 @@
+'use client'
+
 import { debounce } from 'lodash';
 import { RootState } from '@/redux/store';
 import Spinner from '@/components/spinner';
@@ -8,20 +10,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { ErrorMessage } from '@/components/customError';
 import React, { useEffect, useState, useCallback } from 'react';
 import { FixedSizeList as VirtualizedList, ListOnItemsRenderedProps } from 'react-window';
+import { Recipe } from '@/models/recipe';
 
 interface RecipeListPageProps {
-	selectedRecipes: Set<string>;
+	selectedRecipes: Set<string>; //just pass in ids not the objects 
 	setSelectedRecipes: React.Dispatch<React.SetStateAction<Set<string>>>;
-}
-
-interface Recipe {
-	_id: string;
-	title: string;
-	utensils?: string;
-	difficulty?: string;
-	total_time?: string;
-	ingredients: string[];
-	instructions: { key: string; value: string }[];
 }
 
 const RecipeListPage: React.FC<RecipeListPageProps> = ({ selectedRecipes, setSelectedRecipes }) => {
@@ -33,13 +26,9 @@ const RecipeListPage: React.FC<RecipeListPageProps> = ({ selectedRecipes, setSel
 	const [loading, setLoading] = useState(false);
 	const [totalPages, setTotalPages] = useState(1);
 	const [difficulty, setDifficulty] = useState('');
-	const [ingredient, setIngredient] = useState('');
 	const recipes: Recipe[] = useSelector((state: RootState) => state.recipes.recipes);
 	
-	
-
-	const fetchRecipes = useCallback(
-		async (currentPage: number) => {
+	const fetchRecipes = useCallback(async (currentPage: number) => {
 			if (loading || currentPage > totalPages) return;
 			setLoading(true);
 			try {
@@ -48,13 +37,12 @@ const RecipeListPage: React.FC<RecipeListPageProps> = ({ selectedRecipes, setSel
 					pageSize,
 					search,
 					difficulty,
-					ingredient
 				);
 				dispatch(setRecipes(currentPage === 1 ? fetchedRecipes : [...recipes, ...fetchedRecipes]));
 				setTotalPages(fetchedTotalPages);
 				setPage(currentPage);
-			} catch (err) {
-				<ErrorMessage message={err + ''} />;
+			} catch (error) {
+				<ErrorMessage message={error + ''} />;
 				setError('Failed to fetch recipes. Please try again.');
 			} finally {
 				setLoading(false);
@@ -83,7 +71,6 @@ const RecipeListPage: React.FC<RecipeListPageProps> = ({ selectedRecipes, setSel
 	
 	const handleSearchChange = debouncedSearch;
 
-
 	const toggleSelectRecipe = (id: string) => {
 		setSelectedRecipes((prev) => {
 			const updated = new Set(prev);
@@ -94,11 +81,10 @@ const RecipeListPage: React.FC<RecipeListPageProps> = ({ selectedRecipes, setSel
 
 	const RecipeListItem = React.memo(({ recipe }: { recipe: Recipe }) => {
 		const isSelected = selectedRecipes.has(recipe._id);
-
 		return (
-			<div style={{ padding: '10px', borderBottom: '1px solid #ddd' }}>
+			<div>
 				<h3>{recipe.title}</h3>
-				<p>Total Time: {recipe.total_time || 'N/A'}</p>
+				<p>Total Time: {recipe['total time'] || 'N/A'}</p>
 				<p>Difficulty: {recipe.difficulty || 'Unknown'}</p>
 				<button onClick={() => toggleSelectRecipe(recipe._id)}>
 					{isSelected ? 'Remove' : 'Add'}
@@ -107,7 +93,7 @@ const RecipeListPage: React.FC<RecipeListPageProps> = ({ selectedRecipes, setSel
 		);
 	});
 
-	const renderRecipeItem = ({ index, style }: { index: number; style: React.CSSProperties }) => {
+	const renderRecipeItem = ({ index }: { index: number;}) => {
 		const recipe = recipes[index];
 		return recipe ? <RecipeListItem recipe={recipe} /> : null;
 	};

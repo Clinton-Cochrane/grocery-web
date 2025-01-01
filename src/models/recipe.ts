@@ -1,20 +1,27 @@
+export interface Ingredient {
+	_id?: string;
+	name: string;
+	amount: number;
+	measurement: string;
+}
+
 export interface Recipe {
 	_id: string;
+	fat?: string;
+	url?: string;
 	title: string;
-	ingredients: string[];
-	instructions: { key: string; value: string }[];
-	'total time'?: string;
+	fiber?: string;
+	sugar?: string;
+	sodium?: string;
+	protein?: string;
+	calories?: string;
 	utensils?: string;
 	difficulty?: string;
-	description?: string;
-	url?: string;
-	saturated_fat?: string;
-	fat?: string;
-	calories?: string;
-	carbohydrate?: string;
-	sugar?: string;
-	fiber?: string;
-	protein?: string;
 	cholesterol?: string;
-	sodium?: string;
+	description?: string;
+	carbohydrate?: string;
+	'total time'?: string;
+	saturated_fat?: string;
+	ingredients: Ingredient[];
+	instructions: { key: string; value: string }[];
 }

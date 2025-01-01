@@ -12,7 +12,7 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
-      <body>
+      <body className="bg-primary text-gray-100 min-h-screen">
         <Provider store={store}>{children}</Provider>
       </body>
     </html>

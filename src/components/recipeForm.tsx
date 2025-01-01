@@ -72,7 +72,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipe, onSave, onCancel }) => 
 
 	return (
 		<form onSubmit={handleSubmit}>
-			<div>
+			<div className="space-y-4 bg-gray-800 p-6 rounded shadow">
 				{formFields.map((field) => (
 					<div key={field.name} style={{ marginBottom: '1rem' }}>
 						<label htmlFor={field.name}>{field.label}</label>
@@ -95,14 +95,17 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipe, onSave, onCancel }) => 
 								type={field.type}
 								value={formData[field.name as keyof typeof formData]}
 								onChange={(e) => handleChange(field.name, e.target.value)}
+								className="w-full p-2 bg-gray-700 text-white rounded"
 							/>
 						)}
 						{errors[field.name] && <p style={{ color: 'red' }}>{errors[field.name]}</p>}
 					</div>
 				))}
 			</div>
-			<button type="submit">{recipe ? 'Save Changes' : 'Add Recipe'}</button>
-			<button type="button" onClick={onCancel}>
+			<button className="px-4 py-2 bg-secondary text-white rounded" type="submit">
+				{recipe ? 'Save Changes' : 'Add Recipe'}
+			</button>
+			<button className="px-4 py-2 bg-gray-600 text-white rounded" type="button" onClick={onCancel}>
 				Cancel
 			</button>
 		</form>

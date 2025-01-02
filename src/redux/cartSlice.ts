@@ -20,7 +20,9 @@ const cartSlice = createSlice({
 				existingItem.quantity += quantity;
 			} else {
 				state.push({recipeId, quantity})
+				console.log("state push")
 			}
+
 		},
 		updateRecipeQuantity: (state, action: PayloadAction<{recipeId: string; quantity: number}>) => {
 			const {recipeId, quantity} = action.payload;

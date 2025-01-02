@@ -1,64 +1,54 @@
 'use client';
 
 import { debounce } from 'lodash';
+import { Recipe } from '@/models/recipe';
 import { RootState } from '@/redux/store';
 import Spinner from '@/components/spinner';
 import Filters from '@/components/Filters';
 import { getRecipes } from '@/services/api';
-import { deleteRecipe, setRecipes } from '@/redux/recipeSlice';
-import { deleteRecipe as deleteRecipeApi } from '@/services/api';
+import { setRecipes } from '@/redux/recipeSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import { ErrorMessage } from '@/components/customError';
+import RecipeListItem from '@/components/recipeListItem';
 import React, { useEffect, useState, useCallback } from 'react';
 import { FixedSizeList as VirtualizedList, ListOnItemsRenderedProps } from 'react-window';
-import { Recipe } from '@/models/recipe';
+import { addRecipeToCart, removeRecipeFromCart } from '@/redux/cartSlice';
 
-interface RecipeListPageProps {
-	selectedRecipes: Set<string>; //just pass in ids not the objects
-	setSelectedRecipes: React.Dispatch<React.SetStateAction<Set<string>>>;
-}
-
-const RecipeListPage: React.FC<RecipeListPageProps> = ({ selectedRecipes, setSelectedRecipes }) => {
-	const pageSize = 10;
-	const dispatch = useDispatch();
-	const [page, setPage] = useState(1);
-	const [error, setError] = useState('');
-	const [search, setSearch] = useState('');
-	const [loading, setLoading] = useState(false);
-	const [totalPages, setTotalPages] = useState(1);
-	const [difficulty, setDifficulty] = useState('');
+const RecipeListPage: React.FC = () => {
 	const recipes: Recipe[] = useSelector((state: RootState) => state.recipes.recipes);
+	const recipesInCart = useSelector((state: RootState) => state.cart);
+	const [difficulty, setDifficulty] = useState('');
+	const [totalPages, setTotalPages] = useState(1);
+	const [loading, setLoading] = useState(false);
+	const [search, setSearch] = useState('');
+	const [page, setPage] = useState(1);
+	const dispatch = useDispatch();
+	const pageSize = 10;
 
 	const fetchRecipes = useCallback(
 		async (currentPage: number) => {
 			if (loading || currentPage > totalPages) return;
 			setLoading(true);
 			try {
-				const { recipes: fetchedRecipes, totalPages: fetchedTotalPages } = await getRecipes(
-					currentPage,
-					pageSize,
-					search,
-					difficulty
-				);
+				const { recipes: fetchedRecipes, totalPages } = await getRecipes(currentPage, pageSize, search, difficulty);
 				dispatch(setRecipes(currentPage === 1 ? fetchedRecipes : [...recipes, ...fetchedRecipes]));
-				setTotalPages(fetchedTotalPages);
+				setTotalPages(totalPages);
 				setPage(currentPage);
 			} catch (error) {
-				<ErrorMessage message={error + ''} />;
-				setError('Failed to fetch recipes. Please try again.');
+				console.error('Fetch failed:', error);
 			} finally {
 				setLoading(false);
 			}
 		},
-		[dispatch, loading, pageSize, search, difficulty, recipes, totalPages]
+		[dispatch, loading, pageSize, search, difficulty, totalPages]
 	);
 
 	useEffect(() => {
 		fetchRecipes(1);
-	}, [fetchRecipes]);
+	}, []);
 
 	const loadMoreRecipes = () => {
 		if (!loading && page < totalPages) {
+			console.log('Loading more recipes: currentPage =', page + 1);
 			fetchRecipes(page + 1);
 		}
 	};
@@ -74,67 +64,51 @@ const RecipeListPage: React.FC<RecipeListPageProps> = ({ selectedRecipes, setSel
 	const handleSearchChange = debouncedSearch;
 
 	const toggleSelectRecipe = (id: string) => {
-		setSelectedRecipes((prev) => {
-			const updated = new Set(prev);
-			updated.has(id) ? updated.delete(id) : updated.add(id);
-			return updated;
-		});
+		const isInCart = recipesInCart.some((item) => item.recipeId === id);
+		if (isInCart) {
+			dispatch(removeRecipeFromCart(id));
+		} else {
+			dispatch(addRecipeToCart({ recipeId: id }));
+		}
 	};
-
-	const RecipeListItem = React.memo(({ recipe }: { recipe: Recipe }) => {
-		const isSelected = selectedRecipes.has(recipe._id);
-		const handleDelete = async () => {
-			if (confirm(`Are you sure you want to delete "${recipe.title}"?`)) {
-				try {
-					await deleteRecipeApi(recipe._id); // First, delete from the backend
-					dispatch(deleteRecipe(recipe._id)); // Then update the Redux state
-					console.log(`Recipe "${recipe.title}" deleted successfully.`);
-				} catch (error) {
-					console.error('Failed to delete recipe:', error);
-					alert('Failed to delete recipe. Please try again.');
-				}
-			}
-		};
-
-		return (
-			<div>
-				<h3 className="text-lg font-bold">{recipe.title}</h3>
-				<p>Total Time: {recipe['total time'] || 'N/A'}</p>
-				<p>Difficulty: {recipe.difficulty || 'Unknown'}</p>
-				<button onClick={() => toggleSelectRecipe(recipe._id)}>{isSelected ? 'Remove' : 'Add'}</button>
-				<button onClick={handleDelete}>Delete Recipe</button>
-			</div>
-		);
-	});
 
 	const renderRecipeItem = ({ index, style }: { index: number; style: React.CSSProperties }) => {
 		const recipe = recipes[index];
+		const isSelected = recipesInCart.some((item) => item.recipeId === recipe._id);
+
 		return recipe ? (
 			<div key={recipe._id} style={style}>
-				<RecipeListItem recipe={recipe} />
+				<RecipeListItem recipe={recipe} isSelected={isSelected} toggleSelect={toggleSelectRecipe} />
 			</div>
 		) : null;
 	};
 
 	return (
-		<div className="space-y-4">
-			{error && <ErrorMessage message={error} />}
-			<Filters search={search} setSearch={handleSearchChange} difficulty={difficulty} setDifficulty={setDifficulty} />
-			{loading && <Spinner />}
-			{!loading && recipes.length === 0 && <p>No recipes found.</p>}
-			<VirtualizedList
-				height={600}
-				width="100%"
-				itemCount={recipes.length}
-				itemSize={80}
-				onItemsRendered={({ visibleStopIndex }: ListOnItemsRenderedProps) => {
-					if (visibleStopIndex + 1 === recipes.length) {
-						loadMoreRecipes();
-					}
-				}}
-			>
-				{renderRecipeItem}
-			</VirtualizedList>
+		<div className="flex flex-col min-h-screen">
+			{/* Filters Section */}
+			<div className="p-4">
+				<Filters search={search} setSearch={handleSearchChange} difficulty={difficulty} setDifficulty={setDifficulty} />
+				{loading && <Spinner />}
+			</div>
+
+			{/* Virtualized List Section */}
+			<div className="flex-grow">
+				{!loading && recipes.length === 0 && <p>No recipes found.</p>}
+				<VirtualizedList
+					height={900} // Maintain a consistent visible height
+					width="100%" // Stretch the list to full page width
+					itemCount={recipes.length}
+					itemSize={200}
+					onItemsRendered={({ visibleStopIndex }: ListOnItemsRenderedProps) => {
+						if (!loading && visibleStopIndex + 1 === recipes.length && page < totalPages) {
+							console.log('Triggering loadMoreRecipes for page =', page + 1);
+							loadMoreRecipes();
+						}
+					}}
+				>
+					{({ index, style }: { index: number; style: React.CSSProperties }) => renderRecipeItem({ index, style })}
+				</VirtualizedList>
+			</div>
 		</div>
 	);
 };

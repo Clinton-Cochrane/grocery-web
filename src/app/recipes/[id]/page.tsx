@@ -71,15 +71,13 @@ const RecipePage = () => {
 					) : (
 						<ul>
 							{recipe.ingredients.map((ingredient, index) => (
-								<li key={index}>
-									{ingredient.amount} {ingredient.measurement} {ingredient.name}
-								</li>
+								<li key={index}>{ingredient}</li>
 							))}
 						</ul>
 					)}
 
 					<h2>Instructions:</h2>
-					{recipe.instructions.length === 0 ? (
+					{recipe.instructions && (recipe.instructions.length === 0 ? (
 						<p> No Instructions on this one</p>
 					) : (
 						<ol>
@@ -87,7 +85,7 @@ const RecipePage = () => {
 								<li key={instruction.key || index}>{instruction.value}</li>
 							))}
 						</ol>
-					)}
+					))}
 
 					<h2>Nutritional Information:</h2>
 					<ul>

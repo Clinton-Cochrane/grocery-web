@@ -1,6 +1,6 @@
 import { Recipe } from '@/models/recipe';
 import axios from 'axios';
-const API_BASE_URL = process.env.API_BASE_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 
 export const getRecipes = async (
@@ -8,24 +8,26 @@ export const getRecipes = async (
   pageSize: number,
   searchTerm: string,
   difficulty: string,
-  ingredient: string = "",
+  ingredient: string = ""
 ) => {
+  console.log("API Request Params:", { newPage, pageSize, searchTerm, difficulty });
   try {
     const response = await axios.get(`${API_BASE_URL}/recipes`, {
       params: {
-        page: newPage,
-        pageSize,
-        search: searchTerm,
-        difficulty,
-        ingredient,
+        page: newPage || 11,
+        pageSize: pageSize || 10,
+        search: searchTerm || "",
+        difficulty: difficulty || "",
+        ingredient: ingredient || "",
       },
     });
     return response.data;
   } catch (error) {
-    console.error("API Error:");
-    throw error;
+    console.error("API Error:", error);
+    throw new Error(`Failed to fetch recipes: ${error}`);
   }
 };
+
 
 export const createRecipe = async (recipe: Recipe) => {
   try {

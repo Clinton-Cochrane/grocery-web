@@ -22,7 +22,7 @@ export interface Recipe {
 	carbohydrate?: string;
 	'total time'?: string;
 	saturated_fat?: string;
-	ingredients: Ingredient[];
+	ingredients: [string,string][];
 	instructions: { key: string; value: string }[];
 }
 

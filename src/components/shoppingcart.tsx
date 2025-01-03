@@ -1,5 +1,6 @@
 import { Recipe } from '@/models/recipe';
 import Extras from './extras';
+import { useRouter } from 'next/navigation';
 
 interface ShoppingCartProps {
 	recipes: { recipe: Recipe; quantity: number }[];
@@ -9,13 +10,14 @@ interface ShoppingCartProps {
 }
 
 const ShoppingCart: React.FC<ShoppingCartProps> = ({ recipes, onRemove, onClear, onQuantityChange }) => {
+	const router = useRouter();
 	return recipes.length === 0 ? (
 		<p className="text-center text-gray-400">Your cart is empty.</p>
 	) : (
 		<div className="space-y-4">
 			<ul className="space-y-2">
 				{recipes.map(({ recipe, quantity }, index) => (
-					<li key={`${recipe._id}-${index}-${quantity}`} className="p-4 bg-gray-800 rounded shadow">
+					<li key={`${recipe._id}-${index}-${quantity}`} onClick={()=>router.push(`/recipes/${recipe._id}`)} className="p-4 bg-gray-800 rounded shadow">
 						<h3 className="text-lg font-bold">{recipe.title}</h3>
 						{recipe._id === 'extras' ? (
 							<Extras ingredients={recipe.ingredients} />

@@ -1,17 +1,19 @@
 'use client';
 
 import { debounce } from 'lodash';
+import { FaPlus } from 'react-icons/fa';
 import { Recipe } from '@/models/recipe';
 import { RootState } from '@/redux/store';
 import Spinner from '@/components/spinner';
 import Filters from '@/components/Filters';
 import { getRecipes } from '@/services/api';
+import { useRouter } from 'next/navigation';
 import { setRecipes } from '@/redux/recipeSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import RecipeListItem from '@/components/recipeListItem';
 import React, { useEffect, useState, useCallback } from 'react';
-import { FixedSizeList as VirtualizedList, ListOnItemsRenderedProps } from 'react-window';
 import { addRecipeToCart, removeRecipeFromCart } from '@/redux/cartSlice';
+import { FixedSizeList as VirtualizedList, ListOnItemsRenderedProps } from 'react-window';
 
 const RecipeListPage: React.FC = () => {
 	const recipes: Recipe[] = useSelector((state: RootState) => state.recipes.recipes);
@@ -20,8 +22,11 @@ const RecipeListPage: React.FC = () => {
 	const [totalPages, setTotalPages] = useState(1);
 	const [loading, setLoading] = useState(false);
 	const [search, setSearch] = useState('');
+	const [error, setError] = useState('');
 	const [page, setPage] = useState(1);
 	const dispatch = useDispatch();
+	const router = useRouter();
+
 	const pageSize = 10;
 
 	const fetchRecipes = useCallback(
@@ -34,6 +39,7 @@ const RecipeListPage: React.FC = () => {
 				setTotalPages(totalPages);
 				setPage(currentPage);
 			} catch (error) {
+				setError('Failed to laod recipes. Please Try Again Later.');
 				console.error('Fetch failed:', error);
 			} finally {
 				setLoading(false);
@@ -72,6 +78,10 @@ const RecipeListPage: React.FC = () => {
 		}
 	};
 
+	const addNewRecipe = () => {
+		router.push('/recipes/add');
+	};
+
 	const renderRecipeItem = ({ index, style }: { index: number; style: React.CSSProperties }) => {
 		const recipe = recipes[index];
 		const isSelected = recipesInCart.some((item) => item.recipeId === recipe._id);
@@ -85,6 +95,7 @@ const RecipeListPage: React.FC = () => {
 
 	return (
 		<div className="flex flex-col min-h-screen">
+			{error && <p className="text-red-500 text-center">{error}</p>}
 			{/* Filters Section */}
 			<div className="p-4">
 				<Filters search={search} setSearch={handleSearchChange} difficulty={difficulty} setDifficulty={setDifficulty} />
@@ -108,6 +119,10 @@ const RecipeListPage: React.FC = () => {
 				>
 					{({ index, style }: { index: number; style: React.CSSProperties }) => renderRecipeItem({ index, style })}
 				</VirtualizedList>
+				{/* FAB */}
+				<button onClick={addNewRecipe} className="fixed bottom-4 right-8 p-4 bg-teal-500 text-black rounded-full">
+					<FaPlus className="text-xl" />
+				</button>
 			</div>
 		</div>
 	);

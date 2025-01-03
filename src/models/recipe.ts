@@ -1,8 +1,8 @@
 export interface Ingredient {
 	_id?: string;
-	name: string;
-	amount: number;
+	quantity: number;
 	measurement: string;
+	name: string;
 }
 
 export interface Recipe {
@@ -22,7 +22,7 @@ export interface Recipe {
 	carbohydrate?: string;
 	'total time'?: string;
 	saturated_fat?: string;
-	ingredients: [string,string][];
+	ingredients: Ingredient[];
 	instructions: { key: string; value: string }[];
 }
 

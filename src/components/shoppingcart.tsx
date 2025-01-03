@@ -1,4 +1,5 @@
 import { Recipe } from '@/models/recipe';
+import Extras from './extras';
 
 interface ShoppingCartProps {
 	recipes: { recipe: Recipe; quantity: number }[];
@@ -16,43 +17,42 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ recipes, onRemove, onClear,
 				{recipes.map(({ recipe, quantity }, index) => (
 					<li key={`${recipe._id}-${index}-${quantity}`} className="p-4 bg-gray-800 rounded shadow">
 						<h3 className="text-lg font-bold">{recipe.title}</h3>
-						<ul className="ml-4 list-disc">
-							{recipe.ingredients.map((ingredient, idx) => {
-								if (Array.isArray(ingredient)) {
-									return (
-										<li key={`${ingredient[1]}-${idx}`}>
-											{ingredient.join(' ')}
-										</li>
-									);
-								} else if (typeof ingredient === 'string') {
-									// Handle single string format
-									return (
-										<li key={`${ingredient}-${idx}`}>
-											{ingredient}
-										</li>
-									);
-								}
-								return null; // Handle unexpected formats gracefully
-							})}
-						</ul>
-						<p>Quantity: {quantity}</p>
-						<div className="flex space-x-2 mt-2">
-							<button
-								className="px-3 py-1 bg-secondary text-white rounded"
-								onClick={() => onQuantityChange(recipe._id, quantity - 1)}
-							>
-								-
-							</button>
-							<button
-								className="px-3 py-1 bg-secondary text-white rounded"
-								onClick={() => onQuantityChange(recipe._id, quantity + 1)}
-							>
-								+
-							</button>
-							<button className="px-3 py-1 bg-red-600 text-white rounded" onClick={() => onRemove(recipe._id)}>
-								Remove
-							</button>
-						</div>
+						{recipe._id === 'extras' ? (
+							<Extras ingredients={recipe.ingredients} />
+						) : (
+							<ul className="ml-4 list-disc">
+								{recipe.ingredients.map((ingredient, idx) => (
+									<li key={idx}>
+										{`${ingredient.quantity || 0} ${ingredient.measurement || 'undefined'} ${ingredient.name || 'undefined'}`}
+									</li>
+								))}
+							</ul>
+						)}
+						{recipe._id !== 'extras' && (
+							<>
+								<p>Quantity: {quantity}</p>
+								<div className="flex space-x-2 mt-2">
+									<button
+										className="px-3 py-1 bg-secondary text-white rounded"
+										onClick={() => onQuantityChange(recipe._id, quantity - 1)}
+									>
+										-
+									</button>
+									<button
+										className="px-3 py-1 bg-secondary text-white rounded"
+										onClick={() => onQuantityChange(recipe._id, quantity + 1)}
+									>
+										+
+									</button>
+									<button
+										className="px-3 py-1 bg-red-600 text-white rounded"
+										onClick={() => onRemove(recipe._id)}
+									>
+										Remove
+									</button>
+								</div>
+							</>
+						)}
 					</li>
 				))}
 			</ul>

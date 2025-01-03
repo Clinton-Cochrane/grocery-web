@@ -13,15 +13,15 @@ interface RecipeListItemProps {
 
 const RecipeListItem: React.FC<RecipeListItemProps> = React.memo(({ recipe, isSelected, toggleSelect }) => {
 	const dispatch = useDispatch();
-	const router = useRouter()
+	const router = useRouter();
 
 	const handleDelete = async (event: React.MouseEvent) => {
-		event?.stopPropagation()
-		if (confirm(`Are you sure you want to delete "${recipe.title}"?`)) {
+		event?.stopPropagation();
+		if (confirm(`Are you sure you want to delete \"${recipe.title}\"?`)) {
 			try {
 				await deleteRecipeApi(recipe._id); // Delete from backend
 				dispatch(deleteRecipe(recipe._id)); // Update Redux state
-				console.log(`Recipe "${recipe.title}" deleted successfully.`);
+				console.log(`Recipe \"${recipe.title}\" deleted successfully.`);
 			} catch (error) {
 				console.error('Failed to delete recipe:', error);
 				alert('Failed to delete recipe. Please try again.');
@@ -30,40 +30,40 @@ const RecipeListItem: React.FC<RecipeListItemProps> = React.memo(({ recipe, isSe
 	};
 
 	return (
-		<div className="border p-4 m-5 rounded shadow max-w-4xl" onClick={()=>router.push(`/recipes/${recipe._id}`)}>
-	{/* First Row */}
-	<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-		<h3 className="text-lg font-bold">{recipe.title}</h3>
-		<div className="flex flex-col items-end gap-2">
-			<div className="flex gap-2">
-				<button
-					className={`px-4 py-2 rounded ${
-						isSelected ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
-					}`}
-					onClick={(e) => toggleSelect(recipe._id, e)}
-				>
-					{isSelected ? 'Remove From Cart' : 'Add To Cart'}
-				</button>
-				<button className="px-4 py-2 bg-gray-500 text-white rounded" onClick={handleDelete}>
-					Delete Recipe
-				</button>
-			</div>			
-		</div>
-	</div>
-
-	{/* Second Row */}
-	<div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-		<div>
-			<p >Utensils: {recipe.utensils || 'Unknown'}</p>
-			<p>Total Time: {recipe['total time'] || 'N/A'}</p>
-		</div>
-        <div className="flex flex-col items-end">
-				<p>Difficulty: {recipe.difficulty || 'Unknown'}</p>
-				<p>Ingredient Count: {recipe.ingredients.length || 'unknown something went wrong'}</p>
+		<div
+			className="border p-4 m-5 rounded shadow max-w-4xl bg-gray-950 flex flex-col gap-4"
+			onClick={() => router.push(`/recipes/${recipe._id}`)}
+		>
+			{/* First Row: Title and Buttons */}
+			<div className="flex justify-between items-center">
+				<h3 className="text-lg font-bold text-gray-300">{recipe.title}</h3>
+				<div className="flex gap-2">
+					<button
+						className={`px-4 py-2 rounded ${
+							isSelected ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
+						}`}
+						onClick={(e) => toggleSelect(recipe._id, e)}
+					>
+						{isSelected ? 'Remove' : 'Add'}
+					</button>
+					<button
+						className="px-4 py-2 bg-gray-500 text-white rounded"
+						onClick={handleDelete}
+					>
+						Delete
+					</button>
+				</div>
 			</div>
-	</div>
-</div>
 
+			{/* Second Row: Total Time and Difficulty */}
+			<div className="flex justify-between">
+				<p className="text-sm text-gray-600">Total Time: {recipe['total time'] || 'N/A'}</p>
+				<p className="text-sm text-gray-600">Difficulty: {recipe.difficulty || 'Unknown'}</p>
+			</div>
+
+			{/* Third Row: Utensils */}
+			<p className="text-sm text-gray-600">Utensils: {recipe.utensils || 'Unknown'}</p>
+		</div>
 	);
 });
 

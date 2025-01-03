@@ -23,7 +23,7 @@ export interface Recipe {
 	'total time'?: string;
 	saturated_fat?: string;
 	ingredients: Ingredient[];
-	instructions: { key: string; value: string }[];
+	instructions: string[];
 }
 
 

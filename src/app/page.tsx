@@ -35,6 +35,7 @@ const RecipeListPage: React.FC = () => {
 			setLoading(true);
 			try {
 				const { recipes: fetchedRecipes, totalPages } = await getRecipes(currentPage, pageSize, search, difficulty);
+				console.log(fetchedRecipes)
 				dispatch(setRecipes(currentPage === 1 ? fetchedRecipes : [...recipes, ...fetchedRecipes]));
 				setTotalPages(totalPages);
 				setPage(currentPage);
@@ -69,7 +70,8 @@ const RecipeListPage: React.FC = () => {
 
 	const handleSearchChange = debouncedSearch;
 
-	const toggleSelectRecipe = (id: string) => {
+	const toggleSelectRecipe = (id: string, event: React.MouseEvent) => {
+		event.stopPropagation();
 		const isInCart = recipesInCart.some((item) => item.recipeId === id);
 		if (isInCart) {
 			dispatch(removeRecipeFromCart(id));
@@ -85,13 +87,18 @@ const RecipeListPage: React.FC = () => {
 	const renderRecipeItem = ({ index, style }: { index: number; style: React.CSSProperties }) => {
 		const recipe = recipes[index];
 		const isSelected = recipesInCart.some((item) => item.recipeId === recipe._id);
-
+		
 		return recipe ? (
 			<div key={recipe._id} style={style}>
-				<RecipeListItem recipe={recipe} isSelected={isSelected} toggleSelect={toggleSelectRecipe} />
+				<RecipeListItem
+					recipe={recipe}
+					isSelected={isSelected}
+					toggleSelect={(id, event) => toggleSelectRecipe(id, event)}
+				/>
 			</div>
 		) : null;
 	};
+	
 
 	return (
 		<div className="flex flex-col min-h-screen">

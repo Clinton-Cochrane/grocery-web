@@ -3,17 +3,20 @@ import { Recipe } from '@/models/recipe';
 import { useDispatch } from 'react-redux';
 import { deleteRecipe } from '@/redux/recipeSlice';
 import { deleteRecipe as deleteRecipeApi } from '@/services/api';
+import { useRouter } from 'next/navigation';
 
 interface RecipeListItemProps {
 	recipe: Recipe;
 	isSelected: boolean;
-	toggleSelect: (id: string) => void;
+	toggleSelect: (id: string, event: React.MouseEvent) => void;
 }
 
 const RecipeListItem: React.FC<RecipeListItemProps> = React.memo(({ recipe, isSelected, toggleSelect }) => {
 	const dispatch = useDispatch();
+	const router = useRouter()
 
-	const handleDelete = async () => {
+	const handleDelete = async (event: React.MouseEvent) => {
+		event?.stopPropagation()
 		if (confirm(`Are you sure you want to delete "${recipe.title}"?`)) {
 			try {
 				await deleteRecipeApi(recipe._id); // Delete from backend
@@ -27,7 +30,7 @@ const RecipeListItem: React.FC<RecipeListItemProps> = React.memo(({ recipe, isSe
 	};
 
 	return (
-		<div className="border p-4 m-5 rounded shadow max-w-4xl">
+		<div className="border p-4 m-5 rounded shadow max-w-4xl" onClick={()=>router.push(`/recipes/${recipe._id}`)}>
 	{/* First Row */}
 	<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 		<h3 className="text-lg font-bold">{recipe.title}</h3>
@@ -37,7 +40,7 @@ const RecipeListItem: React.FC<RecipeListItemProps> = React.memo(({ recipe, isSe
 					className={`px-4 py-2 rounded ${
 						isSelected ? 'bg-red-500 text-white' : 'bg-blue-500 text-white'
 					}`}
-					onClick={() => toggleSelect(recipe._id)}
+					onClick={(e) => toggleSelect(recipe._id, e)}
 				>
 					{isSelected ? 'Remove From Cart' : 'Add To Cart'}
 				</button>

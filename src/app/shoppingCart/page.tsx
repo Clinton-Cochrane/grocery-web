@@ -37,8 +37,6 @@ const ShoppingCartPage: React.FC = () => {
 
 	const handleExportCart = () => {
 		const shoppingList = aggregateIngredients(selectedRecipes);
-		console.log('Aggregated Shopping List:', shoppingList); // Debug the output
-		console.log('Selected Recipes:', selectedRecipes);
 
 		if (shoppingList.length === 0) {
 			alert('Your shopping list is empty.');

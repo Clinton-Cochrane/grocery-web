@@ -35,7 +35,6 @@ const RecipeListPage: React.FC = () => {
 			setLoading(true);
 			try {
 				const { recipes: fetchedRecipes, totalPages } = await getRecipes(currentPage, pageSize, search, difficulty);
-				console.log(fetchedRecipes)
 				dispatch(setRecipes(currentPage === 1 ? fetchedRecipes : [...recipes, ...fetchedRecipes]));
 				setTotalPages(totalPages);
 				setPage(currentPage);

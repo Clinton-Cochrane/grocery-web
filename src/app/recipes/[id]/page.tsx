@@ -45,7 +45,7 @@ const RecipePage = () => {
 			pageMode === pageModeType.ADD
 				? await createRecipe(updatedRecipe)
 				: await updateRecipe(updatedRecipe._id, updatedRecipe);
-			router.push('/recipes');
+			router.push('/');
 		} catch (error) {
 			<ErrorMessage message={error + ''} />;
 		} finally {
@@ -54,8 +54,7 @@ const RecipePage = () => {
 	};
 
 	if (loading) return <Spinner />;
-
-	console.log(recipe?.instructions);
+	
 	return (
 		<div className="p-8 min-h-screen overflow-scroll">
 			{(pageMode === pageModeType.EDIT || pageMode === pageModeType.ADD) && (

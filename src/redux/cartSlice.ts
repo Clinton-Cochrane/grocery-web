@@ -16,12 +16,11 @@ const cartSlice = createSlice({
 	name: 'cart',
 	initialState,
 	reducers: {
-		addRecipeToCart: (state, action: PayloadAction<{ recipeId: string; ingredient?: Ingredient; quantity?: number }>) => {
+		addRecipeToCart: (
+			state,
+			action: PayloadAction<{ recipeId: string; ingredient?: Ingredient; quantity?: number }>
+		) => {
 			const { recipeId, ingredient, quantity = 1 } = action.payload;
-
-			console.log('Action Payload:', action.payload); // Debug the payload
-			console.log('State before update:', JSON.stringify(state, null, 2)); // Log current state
-
 			if (recipeId === 'extras' && ingredient) {
 				let extras = state.find((item) => item.recipeId === 'extras');
 				if (!extras) {
@@ -74,5 +73,12 @@ const cartSlice = createSlice({
 	},
 });
 
-export const { addRecipeToCart, updateRecipeQuantity, removeRecipeFromCart, clearCart,removeExtraIngredient, updateExtraIngredientQuantity } = cartSlice.actions;
+export const {
+	addRecipeToCart,
+	updateRecipeQuantity,
+	removeRecipeFromCart,
+	clearCart,
+	removeExtraIngredient,
+	updateExtraIngredientQuantity,
+} = cartSlice.actions;
 export default cartSlice.reducer;

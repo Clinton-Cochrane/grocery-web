@@ -4,9 +4,9 @@ import { useRouter } from 'next/navigation';
 
 interface ShoppingCartProps {
 	recipes: { recipe: Recipe; quantity: number }[];
-	onRemove: (id: string) => void;
+	onRemove: (id: string, event: React.MouseEvent) => void;
 	onClear: () => void;
-	onQuantityChange: (id: string, quantity: number) => void;
+	onQuantityChange: (id: string, quantity: number, event: React.MouseEvent) => void;
 }
 
 const ShoppingCart: React.FC<ShoppingCartProps> = ({ recipes, onRemove, onClear, onQuantityChange }) => {
@@ -36,19 +36,19 @@ const ShoppingCart: React.FC<ShoppingCartProps> = ({ recipes, onRemove, onClear,
 								<div className="flex space-x-2 mt-2">
 									<button
 										className="px-3 py-1 bg-secondary text-white rounded"
-										onClick={() => onQuantityChange(recipe._id, quantity - 1)}
+										onClick={(e) => onQuantityChange(recipe._id, quantity - 1, e)}
 									>
 										-
 									</button>
 									<button
 										className="px-3 py-1 bg-secondary text-white rounded"
-										onClick={() => onQuantityChange(recipe._id, quantity + 1)}
+										onClick={(e) => onQuantityChange(recipe._id, quantity + 1, e)}
 									>
 										+
 									</button>
 									<button
 										className="px-3 py-1 bg-red-600 text-white rounded"
-										onClick={() => onRemove(recipe._id)}
+										onClick={(e) => onRemove(recipe._id, e)}
 									>
 										Remove
 									</button>

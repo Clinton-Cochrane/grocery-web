@@ -30,8 +30,12 @@ const ShoppingCartPage: React.FC = () => {
 
 	//Handlers
 	const handleClearCart = () => dispatch(clearCart());
-	const handleRemove = (id: string) => dispatch(removeRecipeFromCart(id));
-	const handleQuantityChange = (recipeId: string, quantity: number) => {
+	const handleRemove = (id: string, event: React.MouseEvent) => {
+		event.stopPropagation();
+		dispatch(removeRecipeFromCart(id));
+	};
+	const handleQuantityChange = (recipeId: string, quantity: number, event: React.MouseEvent) => {
+		event.stopPropagation();
 		quantity < 1 ? dispatch(removeRecipeFromCart(recipeId)) : dispatch(updateRecipeQuantity({ recipeId, quantity }));
 	};
 

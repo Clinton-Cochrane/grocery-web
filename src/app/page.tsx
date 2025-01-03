@@ -62,12 +62,14 @@ const RecipeListPage: React.FC = () => {
 	const debouncedSearch = useCallback(
 		debounce((value: string) => {
 			fetchRecipes(1);
-			setSearch(value);
 		}, 300),
 		[fetchRecipes]
 	);
 
-	const handleSearchChange = debouncedSearch;
+	const handleSearchChange = (value: string) => {
+		setSearch(value);
+		debouncedSearch(value);
+	}
 
 	const toggleSelectRecipe = (id: string, event: React.MouseEvent) => {
 		event.stopPropagation();

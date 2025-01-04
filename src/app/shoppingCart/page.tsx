@@ -7,7 +7,11 @@ import ShoppingCart from '@/components/shoppingcart';
 import { useDispatch, useSelector } from 'react-redux';
 import { addRecipeToCart, clearCart, removeRecipeFromCart, updateRecipeQuantity } from '@/redux/cartSlice';
 import { aggregateIngredients } from '@/utilities/utilities';
-import { FaPlus } from 'react-icons/fa';
+import dynamic from 'next/dynamic';
+const FaPlus = dynamic(() => import('react-icons/fa').then((mod) => mod.FaPlus), {
+	ssr: false,
+  });
+  
 
 const ShoppingCartPage: React.FC = () => {
 	const dispatch = useDispatch();

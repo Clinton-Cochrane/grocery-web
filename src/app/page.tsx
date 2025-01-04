@@ -1,7 +1,5 @@
 'use client';
 
-import { debounce } from 'lodash';
-import { FaPlus } from 'react-icons/fa';
 import { Recipe } from '@/models/recipe';
 import { RootState } from '@/redux/store';
 import Spinner from '@/components/spinner';
@@ -14,6 +12,10 @@ import RecipeListItem from '@/components/recipeListItem';
 import React, { useEffect, useState, useCallback } from 'react';
 import { addRecipeToCart, removeRecipeFromCart } from '@/redux/cartSlice';
 import { FixedSizeList as VirtualizedList, ListOnItemsRenderedProps } from 'react-window';
+import dynamic from 'next/dynamic';
+const FaPlus = dynamic(() => import('react-icons/fa').then((mod) => mod.FaPlus), {
+	ssr: false,
+});
 
 const RecipeListPage: React.FC = () => {
 	const recipes: Recipe[] = useSelector((state: RootState) => state.recipes.recipes);
@@ -30,11 +32,16 @@ const RecipeListPage: React.FC = () => {
 	const pageSize = 10;
 
 	const fetchRecipes = useCallback(
-		async (currentPage: number) => {
+		async (currentPage: number, searchQuery = search) => {
 			if (loading || currentPage > totalPages) return;
 			setLoading(true);
 			try {
-				const { recipes: fetchedRecipes, totalPages } = await getRecipes(currentPage, pageSize, search, difficulty);
+				const { recipes: fetchedRecipes, totalPages } = await getRecipes(
+					currentPage,
+					pageSize,
+					searchQuery,
+					difficulty
+				);
 				dispatch(setRecipes(currentPage === 1 ? fetchedRecipes : [...recipes, ...fetchedRecipes]));
 				setTotalPages(totalPages);
 				setPage(currentPage);
@@ -59,16 +66,24 @@ const RecipeListPage: React.FC = () => {
 		}
 	};
 
+	const debounce = <T extends (...args: any[]) => void>(func: T, delay: number) => {
+		let timer: ReturnType<typeof setTimeout>;
+		return (...args: Parameters<T>) => {
+			clearTimeout(timer);
+			timer = setTimeout(() => func(...args), delay);
+		};
+	};
+
 	const debouncedSearch = useCallback(
-		debounce(() => {
-			fetchRecipes(1);
+		debounce((value: string) => {
+			fetchRecipes(1, value);
 		}, 300),
 		[fetchRecipes]
 	);
 
 	const handleSearchChange = (value: string) => {
 		setSearch(value);
-		debouncedSearch();
+		debouncedSearch(value);
 	};
 
 	const toggleSelectRecipe = (id: string, event: React.MouseEvent) => {
@@ -113,8 +128,8 @@ const RecipeListPage: React.FC = () => {
 			<div className="flex-grow">
 				{!loading && recipes.length === 0 && <p>No recipes found.</p>}
 				<VirtualizedList
-					height={900} 
-					width="100%" 
+					height={900}
+					width="100%"
 					itemCount={recipes.length}
 					itemSize={200}
 					onItemsRendered={({ visibleStopIndex }: ListOnItemsRenderedProps) => {

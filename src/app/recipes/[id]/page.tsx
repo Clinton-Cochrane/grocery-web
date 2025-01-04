@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { Recipe } from '@/models/recipe';
 import { useRouter, useParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 
 enum pageModeType {
 	ADD = 'ADD',
@@ -50,6 +51,11 @@ const RecipePage = () => {
 			setLoading(false);
 		}
 	};
+
+	const RecipeForm = dynamic(() => import('@/components/recipeForm'), {
+		loading: () => <p>Loading form...</p>, // Optional loading placeholder
+		ssr: false, // Disable server-side rendering
+	  });
 
 	if (loading) return <Spinner />;
 

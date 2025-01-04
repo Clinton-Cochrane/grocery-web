@@ -15,8 +15,8 @@ export const initialState: RecipeState = {
 	search: '',
 	difficulty: '',
 };
-
-export const recipeReducer = (state: RecipeState, action: { type: string; payload?: any }): RecipeState => {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export const recipeReducer = (state: RecipeState, action: { type: string; payload?: any  }): RecipeState => {
 	switch (action.type) {
 		case 'SET_PAGE':
 			return { ...state, page: action.payload };

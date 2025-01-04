@@ -5,7 +5,7 @@ export interface ValidationResult {
 	errors: Record<string, string>;
 }
 
-export const validateRecipe = (data: Record<string,string | undefined>): ValidationResult => {
+export const validateRecipe = (data: Recipe): ValidationResult => {
 	const errors: Record<string, string> = {};
 
 	//required fields

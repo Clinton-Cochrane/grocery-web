@@ -1,6 +1,6 @@
 'use client';
-
-import { createRecipe, getRecipeById, updateRecipe } from '@/services/api';
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+import { createRecipe, updateRecipe } from '@/services/api';
 import { ErrorMessage } from '@/components/customError';
 import RecipeForm from '@/components/recipeForm';
 import { useEffect, useState } from 'react';
@@ -23,9 +23,7 @@ const RecipePage = () => {
 	const [recipe, setRecipe] = useState<Recipe | null>(null);
 	const recipes = useSelector((state: RootState) => state.recipes.recipes);
 	const [pageMode, setPageMode] = useState<pageModeType>(pageModeType.EDIT);
-
-	let instructionSet = new Set<string>(recipe?.instructions || []);
-	let uniqueInstructions = Array.from(instructionSet);
+	const uniqueInstructions = Array.from(new Set<string>(recipe?.instructions || []));
 
 	useEffect(() => {
 		if (!id) return;
@@ -54,7 +52,7 @@ const RecipePage = () => {
 	};
 
 	if (loading) return <Spinner />;
-	
+
 	return (
 		<div className="p-8 min-h-screen overflow-scroll">
 			{(pageMode === pageModeType.EDIT || pageMode === pageModeType.ADD) && (

@@ -12,8 +12,10 @@ interface RecipeListItemProps {
 }
 
 const RecipeListItem: React.FC<RecipeListItemProps> = React.memo(({ recipe, isSelected, toggleSelect }) => {
+	RecipeListItem.displayName = "RecipeListItem";
 	const dispatch = useDispatch();
 	const router = useRouter();
+
 
 	const handleDelete = async (event: React.MouseEvent) => {
 		event?.stopPropagation();

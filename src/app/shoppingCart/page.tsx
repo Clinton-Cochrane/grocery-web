@@ -1,11 +1,12 @@
 'use client';
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+
 import { Ingredient, Recipe } from '@/models/recipe';
 import { RootState } from '@/redux/store';
 import ShoppingCart from '@/components/shoppingcart';
 import { useDispatch, useSelector } from 'react-redux';
 import { addRecipeToCart, clearCart, removeRecipeFromCart, updateRecipeQuantity } from '@/redux/cartSlice';
 import { aggregateIngredients } from '@/utilities/utilities';
-import { update } from 'lodash';
 import { FaPlus } from 'react-icons/fa';
 
 const ShoppingCartPage: React.FC = () => {

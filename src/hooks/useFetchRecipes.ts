@@ -2,11 +2,14 @@ import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { setRecipes } from '@/redux/recipeSlice';
 import { getRecipes } from '@/services/api';
+import { Recipe } from '@/models/recipe';
 
-const useFetchRecipes = (
-	dispatchState: React.Dispatch<any>,
-	getCurrentRecipes: () => any[] // Pass a function instead of the recipes array
-) => {
+interface FetchRecipesAction {
+	type: string;
+	payload?: unknown;
+}
+
+const useFetchRecipes = (dispatchState: React.Dispatch<FetchRecipesAction>, getCurrentRecipes: () => Recipe[]) => {
 	const dispatch = useDispatch();
 
 	const fetchRecipes = useCallback(

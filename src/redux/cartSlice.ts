@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 import { Ingredient } from '@/models/recipe';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 

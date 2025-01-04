@@ -1,4 +1,4 @@
-import { Recipe, Ingredient } from '@/models/recipe';
+import { Recipe } from '@/models/recipe';
 import React, { useState } from 'react';
 import { validateRecipe } from '@/utilities/validation';
 
@@ -36,8 +36,8 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ recipe, onSave, onCancel }) => 
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		const { ingredients, instructions, ...simpleFields } = formData;
-		const { isValid, errors: validationErrors } = validateRecipe(simpleFields as Record<string, string | undefined>);
+		const {...simpleFields } = formData;
+		const { isValid, errors: validationErrors } = validateRecipe(simpleFields);
 
 		if (!isValid) {
 			setErrors(validationErrors);

@@ -60,7 +60,7 @@ const RecipeListPage: React.FC = () => {
 	};
 
 	const debouncedSearch = useCallback(
-		debounce((value: string) => {
+		debounce(() => {
 			fetchRecipes(1);
 		}, 300),
 		[fetchRecipes]
@@ -68,8 +68,8 @@ const RecipeListPage: React.FC = () => {
 
 	const handleSearchChange = (value: string) => {
 		setSearch(value);
-		debouncedSearch(value);
-	}
+		debouncedSearch();
+	};
 
 	const toggleSelectRecipe = (id: string, event: React.MouseEvent) => {
 		event.stopPropagation();
@@ -88,7 +88,7 @@ const RecipeListPage: React.FC = () => {
 	const renderRecipeItem = ({ index, style }: { index: number; style: React.CSSProperties }) => {
 		const recipe = recipes[index];
 		const isSelected = recipesInCart.some((item) => item.recipeId === recipe._id);
-		
+
 		return recipe ? (
 			<div key={recipe._id} style={style}>
 				<RecipeListItem
@@ -99,7 +99,6 @@ const RecipeListPage: React.FC = () => {
 			</div>
 		) : null;
 	};
-	
 
 	return (
 		<div className="flex flex-col min-h-screen">
@@ -114,8 +113,8 @@ const RecipeListPage: React.FC = () => {
 			<div className="flex-grow">
 				{!loading && recipes.length === 0 && <p>No recipes found.</p>}
 				<VirtualizedList
-					height={900} // Maintain a consistent visible height
-					width="100%" // Stretch the list to full page width
+					height={900} 
+					width="100%" 
 					itemCount={recipes.length}
 					itemSize={200}
 					onItemsRendered={({ visibleStopIndex }: ListOnItemsRenderedProps) => {

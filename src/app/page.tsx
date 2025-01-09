@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { Recipe } from '@/models/recipe';
 import { RootState } from '@/redux/store';
 import Spinner from '@/components/spinner';
@@ -7,12 +8,13 @@ import Filters from '@/components/Filters';
 import { getRecipes } from '@/services/api';
 import { useRouter } from 'next/navigation';
 import { setRecipes } from '@/redux/recipeSlice';
+import { debounce } from '@/utilities/utilities';
 import { useDispatch, useSelector } from 'react-redux';
 import RecipeListItem from '@/components/recipeListItem';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { addRecipeToCart, removeRecipeFromCart } from '@/redux/cartSlice';
-import { FixedSizeList as VirtualizedList, ListOnItemsRenderedProps } from 'react-window';
-import dynamic from 'next/dynamic';
+import { FixedSizeList as VirtualizedList, FixedSizeList } from 'react-window';
+
 const FaPlus = dynamic(() => import('react-icons/fa').then((mod) => mod.FaPlus), {
 	ssr: false,
 });
@@ -20,73 +22,97 @@ const FaPlus = dynamic(() => import('react-icons/fa').then((mod) => mod.FaPlus),
 const RecipeListPage: React.FC = () => {
 	const recipes: Recipe[] = useSelector((state: RootState) => state.recipes.recipes);
 	const recipesInCart = useSelector((state: RootState) => state.cart);
+	const dispatch = useDispatch();
+	const router = useRouter();
+
+	// State
+	const [visibleIndex, setVisibleIndex] = useState(0);
 	const [difficulty, setDifficulty] = useState('');
 	const [totalPages, setTotalPages] = useState(1);
 	const [loading, setLoading] = useState(false);
 	const [search, setSearch] = useState('');
 	const [error, setError] = useState('');
 	const [page, setPage] = useState(1);
-	const dispatch = useDispatch();
-	const router = useRouter();
 
+	// Refs
+	const listRef = useRef<FixedSizeList | null>(null);
+	const scrollPositionRef = useRef(0);
 	const pageSize = 10;
 
-	const fetchRecipes = useCallback(
-		async (currentPage: number, searchQuery = search) => {
-			if (loading || currentPage > totalPages) return;
-			setLoading(true);
+	// Fetch Recipes
+	const fetchRecipes = async (currentPage: number, searchQuery = search) => {
+		if (loading || currentPage > totalPages) return;
+		setLoading(true);
+		try {
+			const { recipes: fetchedRecipes, totalPages } = await getRecipes(
+				currentPage,
+				pageSize,
+				searchQuery,
+				difficulty
+			);
+			dispatch(setRecipes(currentPage === 1 ? fetchedRecipes : [...recipes, ...fetchedRecipes]));
+			setTotalPages(totalPages);
+			setPage(currentPage);
+		} catch (error) {
+			setError('Failed to load recipes. Please try again later.');
+			console.error('Fetch failed:', error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	// Debounced Search
+	const debouncedSearch = debounce((value: string) => {
+		setSearch(value);
+		fetchRecipes(1, value);
+	}, 300);
+
+	// Initial Fetch
+	useEffect(() => {
+		const fetchInitialRecipes = async () => {
 			try {
-				const { recipes: fetchedRecipes, totalPages } = await getRecipes(
-					currentPage,
-					pageSize,
-					searchQuery,
-					difficulty
-				);
-				dispatch(setRecipes(currentPage === 1 ? fetchedRecipes : [...recipes, ...fetchedRecipes]));
+				setLoading(true);
+				const { recipes: fetchedRecipes, totalPages } = await getRecipes(1, pageSize, search, difficulty);
+				dispatch(setRecipes(fetchedRecipes));
 				setTotalPages(totalPages);
-				setPage(currentPage);
 			} catch (error) {
-				setError('Failed to laod recipes. Please Try Again Later.');
+				setError('Failed to load recipes. Please try again later.');
 				console.error('Fetch failed:', error);
 			} finally {
 				setLoading(false);
 			}
-		},
-		[dispatch, loading, pageSize, search, difficulty, totalPages]
-	);
+		};
+		fetchInitialRecipes();
+	}, [dispatch, pageSize, search, difficulty]);
 
+	// Restore Scroll Position
 	useEffect(() => {
-		fetchRecipes(1);
+		if (listRef.current) {
+			listRef.current.scrollTo(scrollPositionRef.current);
+		}
 	}, []);
 
-	const loadMoreRecipes = () => {
-		if (!loading && page < totalPages) {
-			console.log('Loading more recipes: currentPage =', page + 1);
-			fetchRecipes(page + 1);
+	// Scroll to Visible Index
+	useEffect(() => {
+		if (listRef.current) {
+			listRef.current.scrollToItem(visibleIndex, 'start');
 		}
-	};
+	}, [visibleIndex]);
 
-	const debounce = <T extends (...args: any[]) => void>(func: T, delay: number) => {
-		let timer: ReturnType<typeof setTimeout>;
-		return (...args: Parameters<T>) => {
-			clearTimeout(timer);
-			timer = setTimeout(() => func(...args), delay);
-		};
-	};
-
-	const debouncedSearch = useCallback(
-		debounce((value: string) => {
-			fetchRecipes(1, value);
-		}, 300),
-		[fetchRecipes]
-	);
-
+	// Handlers
 	const handleSearchChange = (value: string) => {
-		setSearch(value);
 		debouncedSearch(value);
 	};
 
-	const toggleSelectRecipe = (id: string, event: React.MouseEvent) => {
+	const handleItemClick = (index: number, recipeId: string) => {
+		setVisibleIndex(index);
+		if (listRef.current) {
+			scrollPositionRef.current = listRef.current.props.itemSize * index;
+		}
+		router.push(`/recipes/${recipeId}`);
+	};
+
+	const handleToggleSelectRecipe = (id: string, event: React.MouseEvent) => {
 		event.stopPropagation();
 		const isInCart = recipesInCart.some((item) => item.recipeId === id);
 		if (isInCart) {
@@ -96,25 +122,41 @@ const RecipeListPage: React.FC = () => {
 		}
 	};
 
-	const addNewRecipe = () => {
+	const handleItemsRendered = ({ visibleStartIndex, visibleStopIndex }: { visibleStartIndex: number; visibleStopIndex: number }) => {
+		if (visibleStartIndex !== undefined) {
+			setVisibleIndex(visibleStartIndex);
+			if (listRef.current) {
+				scrollPositionRef.current = listRef.current.props.itemSize * visibleStartIndex;
+			}
+		}
+		if (visibleStopIndex !== undefined && !loading && visibleStopIndex + 1 === recipes.length && page < totalPages) {
+			fetchRecipes(page + 1);
+		}
+	};
+
+	const NavigateAddNewRecipe = () => {
 		router.push('/recipes/add');
 	};
 
+	// Render Recipe Item
 	const renderRecipeItem = ({ index, style }: { index: number; style: React.CSSProperties }) => {
 		const recipe = recipes[index];
+		if (!recipe) return null;
 		const isSelected = recipesInCart.some((item) => item.recipeId === recipe._id);
 
-		return recipe ? (
+		return (
 			<div key={recipe._id} style={style}>
 				<RecipeListItem
 					recipe={recipe}
 					isSelected={isSelected}
-					toggleSelect={(id, event) => toggleSelectRecipe(id, event)}
+					toggleSelect={(id, event) => handleToggleSelectRecipe(id, event)}
+					onItemClick={() => handleItemClick(index, recipe._id)}
 				/>
 			</div>
-		) : null;
+		);
 	};
 
+	// Render
 	return (
 		<div className="flex flex-col min-h-screen">
 			{error && <p className="text-red-500 text-center">{error}</p>}
@@ -124,25 +166,19 @@ const RecipeListPage: React.FC = () => {
 				{loading && <Spinner />}
 			</div>
 
-			{/* Virtualized List Section */}
+			{/* Virtualized List */}
 			<div className="flex-grow">
-				{!loading && recipes.length === 0 && <p>No recipes found.</p>}
 				<VirtualizedList
+					ref={listRef}
 					height={900}
 					width="100%"
 					itemCount={recipes.length}
 					itemSize={200}
-					onItemsRendered={({ visibleStopIndex }: ListOnItemsRenderedProps) => {
-						if (!loading && visibleStopIndex + 1 === recipes.length && page < totalPages) {
-							console.log('Triggering loadMoreRecipes for page =', page + 1);
-							loadMoreRecipes();
-						}
-					}}
+					onItemsRendered={handleItemsRendered}
 				>
 					{({ index, style }: { index: number; style: React.CSSProperties }) => renderRecipeItem({ index, style })}
 				</VirtualizedList>
-				{/* FAB */}
-				<button onClick={addNewRecipe} className="fixed bottom-4 right-8 p-4 bg-teal-500 text-black rounded-full">
+				<button onClick={NavigateAddNewRecipe} className="fixed bottom-4 right-8 p-4 bg-teal-500 text-black rounded-full">
 					<FaPlus className="text-xl" />
 				</button>
 			</div>

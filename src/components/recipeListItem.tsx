@@ -9,9 +9,10 @@ interface RecipeListItemProps {
 	recipe: Recipe;
 	isSelected: boolean;
 	toggleSelect: (id: string, event: React.MouseEvent) => void;
+	onItemClick: (id: string) => void;
 }
 
-const RecipeListItem: React.FC<RecipeListItemProps> = React.memo(({ recipe, isSelected, toggleSelect }) => {
+const RecipeListItem: React.FC<RecipeListItemProps> = React.memo(({ recipe, isSelected, toggleSelect, onItemClick }) => {
 	RecipeListItem.displayName = "RecipeListItem";
 	const dispatch = useDispatch();
 	const router = useRouter();
@@ -34,7 +35,7 @@ const RecipeListItem: React.FC<RecipeListItemProps> = React.memo(({ recipe, isSe
 	return (
 		<div
 			className="border p-4 m-5 rounded shadow max-w-4xl bg-gray-950 flex flex-col gap-4"
-			onClick={() => router.push(`/recipes/${recipe._id}`)}
+			onClick={(e) => onItemClick(recipe._id)}
 		>
 			{/* First Row: Title and Buttons */}
 			<div className="flex justify-between items-center">
